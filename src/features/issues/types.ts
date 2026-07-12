@@ -26,6 +26,7 @@ export interface Status {
   order: number; // 表示順（同一 workflowTypeId 内でのみ意味を持つ）
   color: string; // バッジ色 (例: '#3b82f6')
   isDefault: boolean;
+  archived: boolean; // 使用中のステータスは削除不可のため、廃止はアーカイブで表現する（仕様書2.2）
 }
 
 export interface User {

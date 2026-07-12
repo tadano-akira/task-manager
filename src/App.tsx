@@ -5,8 +5,9 @@ import { LoginPage } from './features/auth/LoginPage';
 import { signOutUser } from './features/auth/authActions';
 import { useIssues, useProjects, useStatuses, useUsers, useWorkflowTypes } from './features/issues/useFirestoreIssueData';
 import { ProjectManagementView } from './features/projects/ProjectManagementView';
+import { MasterDataView } from './features/masterData/MasterDataView';
 
-type View = 'issues' | 'projects';
+type View = 'issues' | 'projects' | 'masterData';
 
 function App() {
   const authState = useAuthUser();
@@ -28,6 +29,7 @@ function App() {
   }
 
   const { authUser, profile } = authState;
+  const isAdmin = profile?.role === 'admin';
 
   const dataLoading =
     projects.loading || workflowTypes.loading || statuses.loading || users.loading || issues.loading;
@@ -51,6 +53,14 @@ function App() {
             >
               プロジェクト管理
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => setView('masterData')}
+                className={`rounded-md px-3 py-1.5 ${view === 'masterData' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                種別・ステータス管理
+              </button>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
@@ -72,6 +82,8 @@ function App() {
         <div className="p-6 text-center text-sm text-slate-500">読み込み中...</div>
       ) : view === 'projects' ? (
         <ProjectManagementView projects={projects.data} />
+      ) : view === 'masterData' ? (
+        <MasterDataView workflowTypes={workflowTypes.data} statuses={statuses.data} isAdmin={isAdmin} />
       ) : (
         <IssueListView
           issues={issues.data}

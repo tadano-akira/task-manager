@@ -51,6 +51,7 @@ export const statusConverter: FirestoreDataConverter<Status> = {
     order: status.order,
     color: status.color,
     isDefault: status.isDefault,
+    archived: status.archived,
   }),
   fromFirestore: (snap) => {
     const data = snap.data();
@@ -62,6 +63,7 @@ export const statusConverter: FirestoreDataConverter<Status> = {
       order: data.order ?? 0,
       color: data.color,
       isDefault: data.isDefault ?? false,
+      archived: data.archived ?? false,
     };
   },
 };
