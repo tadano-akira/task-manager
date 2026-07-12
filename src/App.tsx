@@ -21,8 +21,8 @@ const statuses: Status[] = [
 ];
 
 const users: User[] = [
-  { id: 'user-1', name: '宍戸' },
-  { id: 'user-2', name: '田中' },
+  { id: 'user-1', name: '宍戸', role: 'admin' },
+  { id: 'user-2', name: '田中', role: 'member' },
 ];
 
 const now = new Date();

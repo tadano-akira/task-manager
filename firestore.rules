@@ -1,12 +1,105 @@
 rules_version = '2';
 
-// TODO: 仕様書2.5・8章のロールベース書き込み制御（admin/member、ステータス/種別マスタは管理者のみ、
-// 子課題のprojectId/workflowTypeId整合性チェック等）は未実装。認証済みユーザーの読み書きのみを
-// 許可する暫定ルール。
+// ロールベース書き込み制御（仕様書2.5・4.6）。
+// users/{uid} は Cloud Functions（functions/src/onUserCreate.ts、Auth onCreateトリガー）が
+// role: 'member' で自動作成するのが基本経路。管理者への昇格は Firebase Console 等で手動更新する。
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function currentUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && currentUserRole() == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- users ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // 基本経路はCloud Functionsによる自動作成（Admin SDKはRulesを経由しない）。
+      // クライアントからの自己作成はフォールバックとして許可するが、role は 'member' 固定。
+      allow create: if isOwner(userId) && request.resource.data.role == 'member';
+
+      // 本人はプロフィール（name/avatarUrl等）を編集できるが role は変更できない。
+      // role の変更は管理者のみ許可する。
+      allow update: if isAdmin()
+        || (isOwner(userId) && request.resource.data.role == resource.data.role);
+
+      allow delete: if isAdmin();
+    }
+
+    // --- projects ---
+    match /projects/{projectId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      // issues から projectId で参照されるため、参照整合性を壊す物理削除は禁止（アーカイブ運用）
+      allow delete: if false;
+    }
+
+    // --- workflowTypes（種別マスタ、仕様書2.2: 管理者のみ登録・編集・並び替え） ---
+    match /workflowTypes/{workflowTypeId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin();
+      // issues/statuses から参照されるため物理削除は禁止
+      allow delete: if false;
+    }
+
+    // --- statuses（ステータスマスタ、仕様書2.2: 管理者のみ登録・編集・並び替え） ---
+    match /statuses/{statusId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin();
+      // 仕様書2.2: 使用中のステータスは削除不可（アーカイブのみ）
+      allow delete: if false;
+    }
+
+    // --- issues ---
+    match /issues/{issueId} {
+      // 仕様書4.6: 子課題の projectId/workflowTypeId は必ず親課題と同一とする
+      function parentConsistent(data) {
+        return data.parentId == null || (
+          get(/databases/$(database)/documents/issues/$(data.parentId)).data.projectId == data.projectId &&
+          get(/databases/$(database)/documents/issues/$(data.parentId)).data.workflowTypeId == data.workflowTypeId
+        );
+      }
+
+      // searchTokens/searchReading/searchIndexedAt は Cloud Functions(tokenizeIssue)が
+      // Admin SDK で書き込む専用フィールド（Rulesを経由しないため実際にはこの制約の影響を受けない）。
+      // クライアントからの直接書き込みのみを塞ぐ。
+      function noSearchFieldsOnCreate() {
+        return !request.resource.data.keys().hasAny(['searchTokens', 'searchReading', 'searchIndexedAt']);
+      }
+
+      function searchFieldsUntouchedOnUpdate() {
+        return !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['searchTokens', 'searchReading', 'searchIndexedAt']);
+      }
+
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && noSearchFieldsOnCreate()
+        && parentConsistent(request.resource.data);
+
+      allow update: if isSignedIn()
+        && searchFieldsUntouchedOnUpdate()
+        && parentConsistent(request.resource.data);
+
+      allow delete: if isSignedIn();
+    }
+
+    // 上記以外の未定義コレクションはデフォルト拒否
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
