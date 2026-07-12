@@ -19,16 +19,25 @@ interface CollectionState<T> {
 // 各コレクションをonSnapshotでリアルタイム購読する共通フック。
 // クエリはモジュール読み込み時に一度だけ構築するため参照は安定しており、
 // フィルタ・検索・ツリー構築は既存のクライアントサイドロジック（sortAndFilter.ts/useIssueSearch.ts）に委ねる。
-function useCollectionData<T>(q: Query<T>): CollectionState<T> {
+//
+// enabled はサインイン完了後にのみ購読を開始するためのフラグ。
+// onSnapshotはエラー（permission-deniedなど）が発生するとリスナーが終了し自動再購読しないため、
+// サインイン前に購読を始めてしまうと、サインイン後もエラー状態のまま復帰できなくなる。
+// そのため enabled が false の間は購読自体を行わない。
+function useCollectionData<T>(q: Query<T>, enabled: boolean): CollectionState<T> {
   const [state, setState] = useState<CollectionState<T>>({ data: [], loading: true, error: null });
 
   useEffect(() => {
+    if (!enabled) {
+      setState({ data: [], loading: true, error: null });
+      return;
+    }
     return onSnapshot(
       q,
       (snap) => setState({ data: snap.docs.map((d) => d.data()), loading: false, error: null }),
       (error) => setState((s) => ({ ...s, loading: false, error }))
     );
-  }, [q]);
+  }, [q, enabled]);
 
   return state;
 }
@@ -39,8 +48,9 @@ const statusesQuery = query(collection(db, 'statuses').withConverter(statusConve
 const usersQuery = query(collection(db, 'users').withConverter(userConverter));
 const issuesQuery = query(collection(db, 'issues').withConverter(issueConverter));
 
-export const useProjects = (): CollectionState<Project> => useCollectionData(projectsQuery);
-export const useWorkflowTypes = (): CollectionState<WorkflowType> => useCollectionData(workflowTypesQuery);
-export const useStatuses = (): CollectionState<Status> => useCollectionData(statusesQuery);
-export const useUsers = (): CollectionState<User> => useCollectionData(usersQuery);
-export const useIssues = (): CollectionState<Issue> => useCollectionData(issuesQuery);
+export const useProjects = (enabled: boolean): CollectionState<Project> => useCollectionData(projectsQuery, enabled);
+export const useWorkflowTypes = (enabled: boolean): CollectionState<WorkflowType> =>
+  useCollectionData(workflowTypesQuery, enabled);
+export const useStatuses = (enabled: boolean): CollectionState<Status> => useCollectionData(statusesQuery, enabled);
+export const useUsers = (enabled: boolean): CollectionState<User> => useCollectionData(usersQuery, enabled);
+export const useIssues = (enabled: boolean): CollectionState<Issue> => useCollectionData(issuesQuery, enabled);

@@ -1,17 +1,23 @@
+import { useState } from 'react';
 import { IssueListView } from './features/issues/IssueListView';
 import { useAuthUser } from './features/auth/useAuthUser';
 import { LoginPage } from './features/auth/LoginPage';
 import { signOutUser } from './features/auth/authActions';
 import { useIssues, useProjects, useStatuses, useUsers, useWorkflowTypes } from './features/issues/useFirestoreIssueData';
+import { ProjectManagementView } from './features/projects/ProjectManagementView';
+
+type View = 'issues' | 'projects';
 
 function App() {
   const authState = useAuthUser();
+  const [view, setView] = useState<View>('issues');
+  const isSignedIn = authState.status === 'signedIn';
 
-  const projects = useProjects();
-  const workflowTypes = useWorkflowTypes();
-  const statuses = useStatuses();
-  const users = useUsers();
-  const issues = useIssues();
+  const projects = useProjects(isSignedIn);
+  const workflowTypes = useWorkflowTypes(isSignedIn);
+  const statuses = useStatuses(isSignedIn);
+  const users = useUsers(isSignedIn);
+  const issues = useIssues(isSignedIn);
 
   if (authState.status === 'loading') {
     return <div className="p-6 text-center text-sm text-slate-500">読み込み中...</div>;
@@ -30,7 +36,23 @@ function App() {
   return (
     <div className="mx-auto max-w-6xl p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">タスク管理</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold text-slate-800">タスク管理</h1>
+          <nav className="flex gap-1 text-sm">
+            <button
+              onClick={() => setView('issues')}
+              className={`rounded-md px-3 py-1.5 ${view === 'issues' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+            >
+              課題一覧
+            </button>
+            <button
+              onClick={() => setView('projects')}
+              className={`rounded-md px-3 py-1.5 ${view === 'projects' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+            >
+              プロジェクト管理
+            </button>
+          </nav>
+        </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <span>{profile?.name ?? authUser.email}</span>
           <button
@@ -48,6 +70,8 @@ function App() {
 
       {dataLoading ? (
         <div className="p-6 text-center text-sm text-slate-500">読み込み中...</div>
+      ) : view === 'projects' ? (
+        <ProjectManagementView projects={projects.data} />
       ) : (
         <IssueListView
           issues={issues.data}
