@@ -3,9 +3,8 @@ import Fuse from 'fuse.js';
 import type { Issue } from './types';
 import { normalizeReading } from './kanaUtils';
 
-// PLACEHOLDER: 本実装は後日提供予定。
 // title/memo/searchTokens 用と searchReading 用の2インデックスをFuse.jsで構築し、
-// スコアをマージして返す設計の入出力契約を満たす最小実装。
+// 双方の検索結果をスコア（低いほど一致度が高い）でマージして返す。
 export function useIssueSearch(issues: Issue[], query: string): Issue[] {
   const textFuse = useMemo(
     () =>

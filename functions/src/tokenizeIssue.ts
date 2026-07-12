@@ -1,11 +1,14 @@
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 import kuromoji, { IpadicFeatures, Tokenizer } from 'kuromoji';
-import { normalizeReading } from '../../shared/kanaUtils';
+// functions/shared/ は "npm run build" 実行時に functions/scripts/copy-shared.mjs が
+// リポジトリ直下の shared/ から同期する生成物（Firebase Functionsは functions/ 配下しか
+// デプロイパッケージに含めないため、参照先をこのディレクトリ内に閉じる必要がある）。
+import { normalizeReading } from '../shared/kanaUtils';
 
-// PLACEHOLDER: 本実装は後日提供予定。
-// 仕様書 5.1/5.2/5.3 の契約（onWrite起点・2種のトークン化・再tokenizeスキップ・
-// コールドスタート時のみ辞書ビルド）を満たす最小実装。
+// 課題の title/memo から検索用トークン集合(searchTokens)と読み(searchReading)を
+// 書き込み時に事前計算する（仕様書 5.1〜5.3）。
+// トークナイザーは関数インスタンスにキャッシュし、コールドスタート時のみ辞書をビルドする。
 
 const MEANINGFUL_POS = new Set(['名詞', '動詞', '形容詞', '副詞']);
 
@@ -36,26 +39,29 @@ function extractReading(tokenizer: Tokenizer<IpadicFeatures>, text: string): str
   return normalizeReading(reading);
 }
 
-export const tokenizeIssue = onDocumentWritten('issues/{issueId}', async (event) => {
-  const before = event.data?.before?.data();
-  const after = event.data?.after?.data();
-  if (!after) return; // 削除時は何もしない
+export const tokenizeIssue = onDocumentWritten(
+  { document: 'issues/{issueId}', memory: '512MiB' },
+  async (event) => {
+    const before = event.data?.before?.data();
+    const after = event.data?.after?.data();
+    if (!after) return; // 削除時は何もしない
 
-  // title/memo に変化がない書き込みは re-tokenize をスキップ（無限ループ防止）
-  if (before && before.title === after.title && before.memo === after.memo) return;
+    // title/memo に変化がない書き込みは re-tokenize をスキップ（onWriteの無限ループ防止）
+    if (before && before.title === after.title && before.memo === after.memo) return;
 
-  const tokenizer = await getTokenizer();
-  const text = `${after.title ?? ''} ${after.memo ?? ''}`;
+    const tokenizer = await getTokenizer();
+    const text = `${after.title ?? ''} ${after.memo ?? ''}`;
 
-  const searchTokens = extractTokens(tokenizer, text);
-  const searchReading = extractReading(tokenizer, text);
+    const searchTokens = extractTokens(tokenizer, text);
+    const searchReading = extractReading(tokenizer, text);
 
-  await getFirestore()
-    .collection('issues')
-    .doc(event.params.issueId)
-    .update({
-      searchTokens,
-      searchReading,
-      searchIndexedAt: new Date(),
-    });
-});
+    await getFirestore()
+      .collection('issues')
+      .doc(event.params.issueId)
+      .update({
+        searchTokens,
+        searchReading,
+        searchIndexedAt: new Date(),
+      });
+  }
+);

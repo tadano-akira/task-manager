@@ -20,6 +20,7 @@ dist-ssr
 # Firebase / Cloud Functions
 functions/lib
 functions/node_modules
+functions/shared
 .firebase
 firebase-debug.log
 firestore-debug.log

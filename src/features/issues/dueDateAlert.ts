@@ -1,6 +1,6 @@
 import type { Issue } from './types';
 
-// PLACEHOLDER: 本実装は後日提供予定。しきい値ロジックの入出力契約を満たす最小実装。
+// 期限接近とみなす日数のしきい値（仕様書2.3の初期値）。呼び出し側で上書き可能。
 const DEFAULT_SOON_THRESHOLD_DAYS = 3;
 
 export function getIssueDueAlertLevel(

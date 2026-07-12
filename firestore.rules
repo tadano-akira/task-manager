@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// TODO: 仕様書2.5・8章のロールベース書き込み制御（admin/member、ステータス/種別マスタは管理者のみ、
+// 子課題のprojectId/workflowTypeId整合性チェック等）は未実装。認証済みユーザーの読み書きのみを
+// 許可する暫定ルール。
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
