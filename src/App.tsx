@@ -1,5 +1,8 @@
 import { IssueListView } from './features/issues/IssueListView';
 import type { Issue, Project, Status, User, WorkflowType } from './features/issues/types';
+import { useAuthUser } from './features/auth/useAuthUser';
+import { LoginPage } from './features/auth/LoginPage';
+import { signOutUser } from './features/auth/authActions';
 
 const projects: Project[] = [
   { id: 'proj-1', name: 'mopeo HP', color: '#0ea5e9', archived: false },
@@ -80,16 +83,42 @@ const issues: Issue[] = [
 ];
 
 function App() {
+  const authState = useAuthUser();
+
+  if (authState.status === 'loading') {
+    return <div className="p-6 text-center text-sm text-slate-500">読み込み中...</div>;
+  }
+
+  if (authState.status === 'signedOut') {
+    return <LoginPage />;
+  }
+
+  const { authUser, profile } = authState;
+  // issues/projects/statuses等はまだFirestoreからの実データ取得層が未実装のためモックのまま。
+  // 担当者一覧にはサインイン中の実ユーザーを反映し、ヘッダーの表示・ログアウトを機能させる。
+  const usersWithCurrent = profile && !users.some((u) => u.id === profile.id) ? [...users, profile] : users;
+
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-4 text-2xl font-semibold text-slate-800">タスク管理</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-slate-800">タスク管理</h1>
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <span>{profile?.name ?? authUser.email}</span>
+          <button
+            onClick={() => signOutUser()}
+            className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+          >
+            ログアウト
+          </button>
+        </div>
+      </div>
       <IssueListView
         issues={issues}
         projects={projects}
         workflowTypes={workflowTypes}
         statuses={statuses}
-        users={users}
-        currentUserId="user-1"
+        users={usersWithCurrent}
+        currentUserId={authUser.uid}
       />
     </div>
   );
