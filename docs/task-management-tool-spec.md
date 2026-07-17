@@ -287,7 +287,7 @@ Cloud Functions のトリガーは `onWrite` のため、Function自身による
 - Firestoreデータ取得層は **`onSnapshot` によるリアルタイム同期を採用**（都度フェッチではなく）。認証完了前に購読を開始するとルール上のpermission-deniedでリスナーが終了し復帰しないため、サインイン状態が確定してから購読を開始する設計とする
 - Firestore Security Rulesはロールベース制御を実装済み。admin限定操作はUI側（ナビ非表示等）でも補助的にガードするが、実際の強制はRules側のみに委ねる
 - プロジェクト管理画面・種別/ステータスマスタ管理画面は実装済み。いずれも削除操作は用意せず、アーカイブ/復元のみで運用する
-- 課題（issue）自体の作成・編集UIは未実装（次のステップ）
+- 課題（issue）自体の作成・編集UIは実装済み。子課題は親のproject/種別を継承・固定し、作成後のproject/種別/親の変更は不可とする（整合性を壊すリスクを避けるための意図的な制約）
 
 ## 7. 実装済みコード（2026-07-12時点）
 
@@ -304,6 +304,8 @@ Cloud Functions のトリガーは `onWrite` のため、Function自身による
 | `features/issues/useIssueSearch.ts` | Fuse.js による全文検索フック |
 | `features/issues/useFirestoreIssueData.ts` | Firestore `onSnapshot` によるリアルタイム購読フック群（サインイン完了までは購読しない`enabled`ゲート付き） |
 | `features/issues/IssueRow.tsx` / `IssueListView.tsx` | リストビューのコンポーネント一式 |
+| `features/issues/issueActions.ts` | 課題のFirestore書き込み（作成・編集・削除） |
+| `features/issues/IssueFormModal.tsx` | 課題の作成・編集モーダル（子課題は親のproject/種別を継承・固定、作成後のproject/種別/親の変更は不可） |
 | `features/auth/` | Firebase Authログイン・サインアップ・ログアウト、認証状態+Firestoreプロフィール購読フック |
 | `features/projects/` | プロジェクト管理画面（作成・編集・アーカイブ/復元） |
 | `features/masterData/` | 種別・ステータスマスタ管理画面（admin限定。作成・編集・並び替え・既定ステータス設定・アーカイブ/復元） |
@@ -328,7 +330,6 @@ Cloud Functions のトリガーは `onWrite` のため、Function自身による
 
 ## 8. 未確定事項（次のステップで詰める）
 
-- 課題（issue）の作成・編集UI（現状Firestoreに課題データを投入する手段がアプリ内にない）
 - カンバンビュー・ガントチャートの実装
 - カンバンビューでのドラッグ&ドロップによるステータス変更をいつのタイミングで追加するか
 - 通知機能を追加する際の実装方式（FCM／プッシュ／メール／両方）

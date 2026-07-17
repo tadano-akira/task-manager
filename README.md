@@ -32,7 +32,7 @@ firebase emulators:start --only firestore,auth
 src/
   features/
     auth/          # Firebase Authログイン・サインアップ・useAuthUser(認証状態+Firestoreプロフィール購読)
-    issues/         # 課題ドメイン: 型定義・ツリー構築/フィルタ/ソート・全文検索・リストビューUI
+    issues/         # 課題ドメイン: 型定義・ツリー構築/フィルタ/ソート・全文検索・リストビューUI・作成/編集モーダル
     masterData/     # 種別(workflowTypes)・ステータス(statuses)マスタ管理画面(admin限定)
     projects/       # プロジェクト管理画面(作成・編集・アーカイブ)
   lib/
@@ -63,6 +63,7 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 - Firebase Authによるメール/パスワード ログイン・サインアップ・ログアウト
 - Firestoreからのリアルタイムデータ取得層(`onSnapshot`ベース、`issues`/`projects`/`workflowTypes`/`statuses`/`users`)
 - 課題リストビュー(ツリー表示・フィルタ・全文検索・期限アラート・ページネーション)
+- 課題の作成・編集モーダル(子課題は親のproject/種別を継承・固定、削除も可)
 - プロジェクト管理画面(作成・編集・アーカイブ/復元)
 - 種別・ステータスマスタ管理画面(admin限定。作成・編集・並び替え・既定ステータス設定・アーカイブ/復元)
 - ロールベースFirestore Security Rules(admin/member、種別・ステータスマスタはadmin限定、子課題のprojectId/workflowTypeId整合性チェック等)
@@ -70,7 +71,6 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 
 未実装(次のステップ候補):
 
-- 課題(issue)の作成・編集UI(現状Firestoreに課題データを投入する手段がアプリ内にない)
 - カンバンビュー・ガントチャート
 - 最初の管理者アカウントを作る仕組み(現状Firebase Consoleでの手動編集のみ)
 - 通知機能(期限接近・ステータス変更等、仕様書3章で初期スコープ外と明記)
