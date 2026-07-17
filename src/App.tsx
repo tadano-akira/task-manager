@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { IssueListView } from './features/issues/IssueListView';
+import { IssueFormModal } from './features/issues/IssueFormModal';
+import type { Issue } from './features/issues/types';
 import { useAuthUser } from './features/auth/useAuthUser';
 import { LoginPage } from './features/auth/LoginPage';
 import { signOutUser } from './features/auth/authActions';
@@ -8,10 +10,12 @@ import { ProjectManagementView } from './features/projects/ProjectManagementView
 import { MasterDataView } from './features/masterData/MasterDataView';
 
 type View = 'issues' | 'projects' | 'masterData';
+type IssueModalState = { mode: 'create'; parent: Issue | null } | { mode: 'edit'; issue: Issue } | null;
 
 function App() {
   const authState = useAuthUser();
   const [view, setView] = useState<View>('issues');
+  const [issueModal, setIssueModal] = useState<IssueModalState>(null);
   const isSignedIn = authState.status === 'signedIn';
 
   const projects = useProjects(isSignedIn);
@@ -34,6 +38,11 @@ function App() {
   const dataLoading =
     projects.loading || workflowTypes.loading || statuses.loading || users.loading || issues.loading;
   const dataError = projects.error ?? workflowTypes.error ?? statuses.error ?? users.error ?? issues.error;
+
+  function openIssue(issueId: string) {
+    const issue = issues.data.find((i) => i.id === issueId);
+    if (issue) setIssueModal({ mode: 'edit', issue });
+  }
 
   return (
     <div className="mx-auto max-w-6xl p-6">
@@ -64,6 +73,15 @@ function App() {
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
+          {view === 'issues' && (
+            <button
+              onClick={() => setIssueModal({ mode: 'create', parent: null })}
+              disabled={projects.data.length === 0 || workflowTypes.data.length === 0}
+              className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+            >
+              + 新規課題
+            </button>
+          )}
           <span>{profile?.name ?? authUser.email}</span>
           <button
             onClick={() => signOutUser()}
@@ -92,6 +110,19 @@ function App() {
           statuses={statuses.data}
           users={users.data}
           currentUserId={authUser.uid}
+          onIssueClick={openIssue}
+        />
+      )}
+
+      {issueModal && (
+        <IssueFormModal
+          {...issueModal}
+          projects={projects.data}
+          workflowTypes={workflowTypes.data}
+          statuses={statuses.data}
+          users={users.data}
+          onClose={() => setIssueModal(null)}
+          onCreateChild={(parent) => setIssueModal({ mode: 'create', parent })}
         />
       )}
     </div>
