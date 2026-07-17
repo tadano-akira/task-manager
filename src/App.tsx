@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IssueListView } from './features/issues/IssueListView';
+import { KanbanView } from './features/issues/KanbanView';
 import { IssueFormModal } from './features/issues/IssueFormModal';
 import type { Issue } from './features/issues/types';
 import { useAuthUser } from './features/auth/useAuthUser';
@@ -9,7 +10,7 @@ import { useIssues, useProjects, useStatuses, useUsers, useWorkflowTypes } from 
 import { ProjectManagementView } from './features/projects/ProjectManagementView';
 import { MasterDataView } from './features/masterData/MasterDataView';
 
-type View = 'issues' | 'projects' | 'masterData';
+type View = 'issues' | 'kanban' | 'projects' | 'masterData';
 type IssueModalState = { mode: 'create'; parent: Issue | null } | { mode: 'edit'; issue: Issue } | null;
 
 function App() {
@@ -57,6 +58,12 @@ function App() {
               課題一覧
             </button>
             <button
+              onClick={() => setView('kanban')}
+              className={`rounded-md px-3 py-1.5 ${view === 'kanban' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+            >
+              カンバン
+            </button>
+            <button
               onClick={() => setView('projects')}
               className={`rounded-md px-3 py-1.5 ${view === 'projects' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
@@ -73,7 +80,7 @@ function App() {
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          {view === 'issues' && (
+          {(view === 'issues' || view === 'kanban') && (
             <button
               onClick={() => setIssueModal({ mode: 'create', parent: null })}
               disabled={projects.data.length === 0 || workflowTypes.data.length === 0}
@@ -102,6 +109,16 @@ function App() {
         <ProjectManagementView projects={projects.data} />
       ) : view === 'masterData' ? (
         <MasterDataView workflowTypes={workflowTypes.data} statuses={statuses.data} isAdmin={isAdmin} />
+      ) : view === 'kanban' ? (
+        <KanbanView
+          issues={issues.data}
+          projects={projects.data}
+          workflowTypes={workflowTypes.data}
+          statuses={statuses.data}
+          users={users.data}
+          currentUserId={authUser.uid}
+          onIssueClick={openIssue}
+        />
       ) : (
         <IssueListView
           issues={issues.data}
