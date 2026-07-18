@@ -34,6 +34,7 @@ export interface User {
   name: string;
   avatarUrl?: string;
   role: 'admin' | 'member';
+  fcmTokens?: string[]; // ブラウザPUSH通知(FCM)用のトークン。複数デバイス/ブラウザ分を保持
 }
 
 export interface IssueLink {

@@ -72,26 +72,29 @@ service cloud.firestore {
         );
       }
 
-      // searchTokens/searchReading/searchIndexedAt は Cloud Functions(tokenizeIssue)が
-      // Admin SDK で書き込む専用フィールド（Rulesを経由しないため実際にはこの制約の影響を受けない）。
-      // クライアントからの直接書き込みのみを塞ぐ。
-      function noSearchFieldsOnCreate() {
-        return !request.resource.data.keys().hasAny(['searchTokens', 'searchReading', 'searchIndexedAt']);
+      // searchTokens/searchReading/searchIndexedAt(tokenizeIssue) と dueDateAlertSentAt(通知バッチ)は
+      // Cloud FunctionsがAdmin SDKで書き込む専用フィールド（Admin SDKはRulesを経由しないため
+      // 実際にはこの制約の影響を受けない）。クライアントからの直接書き込みのみを塞ぐ。
+      function serverManagedFields() {
+        return ['searchTokens', 'searchReading', 'searchIndexedAt', 'dueDateAlertSentAt'];
       }
 
-      function searchFieldsUntouchedOnUpdate() {
-        return !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['searchTokens', 'searchReading', 'searchIndexedAt']);
+      function noServerManagedFieldsOnCreate() {
+        return !request.resource.data.keys().hasAny(serverManagedFields());
+      }
+
+      function serverManagedFieldsUntouchedOnUpdate() {
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(serverManagedFields());
       }
 
       allow read: if isSignedIn();
 
       allow create: if isSignedIn()
-        && noSearchFieldsOnCreate()
+        && noServerManagedFieldsOnCreate()
         && parentConsistent(request.resource.data);
 
       allow update: if isSignedIn()
-        && searchFieldsUntouchedOnUpdate()
+        && serverManagedFieldsUntouchedOnUpdate()
         && parentConsistent(request.resource.data);
 
       allow delete: if isSignedIn();

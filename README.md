@@ -16,6 +16,8 @@ npm run dev
 
 `.env` には Firebase コンソール（プロジェクト設定 > 全般 > マイアプリ）で取得できるWebアプリの設定値を入れる。
 
+PUSH通知（FCM）を使う場合は、Firebase Console > Project Settings > Cloud Messaging > Web configuration で「鍵ペアを生成」し、`VITE_FIREBASE_VAPID_KEY` に設定する。
+
 ### ローカルでEmulatorに接続する
 
 本番データに触れずに動作確認したい場合:
@@ -35,11 +37,16 @@ src/
     auth/          # Firebase Authログイン・サインアップ・useAuthUser(認証状態+Firestoreプロフィール購読)
     issues/         # 課題ドメイン: 型定義・ツリー構築/フィルタ/ソート・全文検索・リストビュー/カンバンビューUI・作成/編集モーダル
     masterData/     # 種別(workflowTypes)・ステータス(statuses)マスタ管理画面(admin限定)
+    notifications/  # 通知許可・FCMトークン登録・フォアグラウンドトースト表示
     projects/       # プロジェクト管理画面(作成・編集・アーカイブ)
   lib/
     firebase.ts             # Firebase初期化(+ Emulator接続opt-in)
+    firebaseMessaging.ts    # FCM許可リクエスト・トークン取得・フォアグラウンドリスナー
     firestoreConverters.ts  # Firestore⇔ドメイン型の変換(Timestamp⇔Date等)
   App.tsx           # 認証ゲート・ナビ・各ビューの統合
+
+public/
+  firebase-messaging-sw.js  # バックグラウンドPUSH通知表示用Service Worker
 
 functions/          # Cloud Functions(Firebase Functions標準構成)
   src/
@@ -47,6 +54,8 @@ functions/          # Cloud Functions(Firebase Functions標準構成)
     onUserCreate.ts      # Authユーザー作成時にusers/{uid}をrole:'member'で自動作成
     claimFirstAdmin.ts   # 管理者が1人も存在しない場合のみ呼び出しユーザーをadminに昇格するcallable
     tokenizeIssue.ts     # issue書き込み時にkuromoji.jsで検索用トークン化(searchTokens/searchReading)
+    notifications.ts     # 担当者アサイン/ステータス変更時のPUSH通知 + 期限接近の日次バッチ通知
+    messagingUtils.ts    # FCM送信共通処理・無効トークンのクリーンアップ
   scripts/copy-shared.mjs # ビルド前にリポジトリ直下のshared/をfunctions/shared/へ同期(Functionsは自ディレクトリしかデプロイされないため)
 
 shared/
@@ -71,16 +80,19 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 - 種別・ステータスマスタ管理画面(admin限定。作成・編集・並び替え・既定ステータス設定・アーカイブ/復元)
 - 最初の管理者作成の仕組み(管理者0人の間だけ自己昇格可能な`claimFirstAdmin`)+ ユーザー管理画面(admin限定、ロールの昇格・降格)
 - ロールベースFirestore Security Rules(admin/member、種別・ステータスマスタはadmin限定、子課題のprojectId/workflowTypeId整合性チェック等)
-- Cloud Functions 3本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`)
+- ブラウザPUSH通知(FCM)。担当者アサイン時・ステータス変更時・期限接近(日次バッチ)の3トリガー。メール通知は対応しない
+- Cloud Functions 5本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`・`onIssueWrittenNotify`・`notifyDueDateApproaching`)
 
 未実装(次のステップ候補):
 
 - カンバンビューでのドラッグ&ドロップによるステータス変更
-- 通知機能(期限接近・ステータス変更等、仕様書3章で初期スコープ外と明記)
 
 対応しない方針:
 
 - ガントチャート(不要と判断)
+- メール通知(PUSH通知のみで運用)
+
+**既知の制約**: ブラウザPUSH通知はヘッドレス/自動化ブラウザやシークレットウィンドウでは配信されない(Chrome自体の仕様)。配信確認は通常ウィンドウでの手動テストが必要。
 
 ## Firebaseプロジェクト
 

@@ -73,6 +73,7 @@ export const userConverter: FirestoreDataConverter<User> = {
     name: user.name,
     avatarUrl: user.avatarUrl ?? null,
     role: user.role,
+    fcmTokens: user.fcmTokens ?? [],
   }),
   fromFirestore: (snap) => {
     const data = snap.data();
@@ -81,6 +82,7 @@ export const userConverter: FirestoreDataConverter<User> = {
       name: data.name,
       avatarUrl: data.avatarUrl ?? undefined,
       role: data.role ?? 'member',
+      fcmTokens: (data.fcmTokens as string[] | undefined) ?? undefined,
     };
   },
 };

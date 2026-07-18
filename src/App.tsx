@@ -11,6 +11,8 @@ import { ProjectManagementView } from './features/projects/ProjectManagementView
 import { MasterDataView } from './features/masterData/MasterDataView';
 import { AdminBootstrapBanner } from './features/admin/AdminBootstrapBanner';
 import { UserManagementView } from './features/admin/UserManagementView';
+import { useNotifications } from './features/notifications/useNotifications';
+import { NotificationToasts } from './features/notifications/NotificationToasts';
 
 type View = 'issues' | 'kanban' | 'projects' | 'masterData' | 'userManagement';
 type IssueModalState = { mode: 'create'; parent: Issue | null } | { mode: 'edit'; issue: Issue } | null;
@@ -20,6 +22,8 @@ function App() {
   const [view, setView] = useState<View>('issues');
   const [issueModal, setIssueModal] = useState<IssueModalState>(null);
   const isSignedIn = authState.status === 'signedIn';
+  const currentUid = authState.status === 'signedIn' ? authState.authUser.uid : undefined;
+  const { permission, toasts, enableNotifications, dismissToast } = useNotifications(currentUid);
 
   const projects = useProjects(isSignedIn);
   const workflowTypes = useWorkflowTypes(isSignedIn);
@@ -50,6 +54,7 @@ function App() {
 
   return (
     <div className="mx-auto max-w-6xl p-6">
+      <NotificationToasts toasts={toasts} onDismiss={dismissToast} />
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-semibold text-slate-800">タスク管理</h1>
@@ -91,6 +96,22 @@ function App() {
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
+          {permission === 'default' && (
+            <button
+              onClick={() => enableNotifications()}
+              className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              🔔 通知を有効にする
+            </button>
+          )}
+          {permission === 'denied' && (
+            <span
+              className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs text-amber-700"
+              title="ブラウザの設定でこのサイトの通知がブロックされています。アドレスバー左側のアイコンから「通知」を許可に変更してください。"
+            >
+              🔕 通知がブロックされています
+            </span>
+          )}
           {(view === 'issues' || view === 'kanban') && (
             <button
               onClick={() => setIssueModal({ mode: 'create', parent: null })}
