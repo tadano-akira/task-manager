@@ -2,6 +2,14 @@
   "projects": {
     "default": "task-manager-app-shishido"
   },
-  "targets": {},
+  "targets": {
+    "task-manager-app-shishido": {
+      "hosting": {
+        "task-manager": [
+          "task-mgr-tool"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

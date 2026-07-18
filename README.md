@@ -98,6 +98,7 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 
 - プロジェクトID: `task-manager-app-shishido`(Blazeプラン、Firestoreリージョン: asia-northeast1)
 - Firebase Console: https://console.firebase.google.com/project/task-manager-app-shishido/overview
+- **Hosting URL**: https://task-mgr-tool.web.app（`firebase deploy --only hosting` でデプロイ。デフォルトの `task-manager-app-shishido.web.app` は未使用）
 
 ## 主なnpmスクリプト
 
