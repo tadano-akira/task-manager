@@ -56,6 +56,7 @@ functions/          # Cloud Functions(Firebase Functions標準構成)
     tokenizeIssue.ts     # issue書き込み時にkuromoji.jsで検索用トークン化(searchTokens/searchReading)
     notifications.ts     # 担当者アサイン/ステータス変更時のPUSH通知 + 期限接近の日次バッチ通知
     messagingUtils.ts    # FCM送信共通処理・無効トークンのクリーンアップ
+    blockNewSignups.ts   # 新規登録を一時停止するAuthブロッキング関数(要GCIP、詳細は下記)
   scripts/copy-shared.mjs # ビルド前にリポジトリ直下のshared/をfunctions/shared/へ同期(Functionsは自ディレクトリしかデプロイされないため)
 
 shared/
@@ -81,7 +82,8 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 - 最初の管理者作成の仕組み(管理者0人の間だけ自己昇格可能な`claimFirstAdmin`)+ ユーザー管理画面(admin限定、ロールの昇格・降格)
 - ロールベースFirestore Security Rules(admin/member、種別・ステータスマスタはadmin限定、子課題のprojectId/workflowTypeId整合性チェック等)
 - ブラウザPUSH通知(FCM)。担当者アサイン時・ステータス変更時・期限接近(日次バッチ)の3トリガー。メール通知は対応しない
-- Cloud Functions 5本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`・`onIssueWrittenNotify`・`notifyDueDateApproaching`)
+- **新規登録を一時停止中**(`blockNewSignups`、Authブロッキング関数)。検証用アカウント作成後に閉じた。フロントエンドの「新規登録」導線も非表示(`LoginPage.tsx`の`SIGNUPS_ENABLED = false`)。再開手順は仕様書2.5参照
+- Cloud Functions 6本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`・`onIssueWrittenNotify`・`notifyDueDateApproaching`・`blockNewSignups`)
 
 未実装(次のステップ候補):
 
@@ -96,7 +98,7 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 
 ## Firebaseプロジェクト
 
-- プロジェクトID: `task-manager-app-shishido`(Blazeプラン、Firestoreリージョン: asia-northeast1)
+- プロジェクトID: `task-manager-app-shishido`(Blazeプラン、Firestoreリージョン: asia-northeast1、Google Cloud Identity Platformへアップグレード済み)
 - Firebase Console: https://console.firebase.google.com/project/task-manager-app-shishido/overview
 - **Hosting URL**: https://task-mgr-tool.web.app（`firebase deploy --only hosting` でデプロイ。デフォルトの `task-manager-app-shishido.web.app` は未使用）
 

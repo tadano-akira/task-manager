@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { authErrorMessage, signIn, signUp } from './authActions';
 
+// 新規登録を一時的に停止中。実際の作成阻止はCloud Functions側のblockNewSignupsで行っているため
+// (直接API経由での作成も防げる)、ここはUI導線を隠すためだけのフラグ。
+// 再開する場合はtrueに戻し、functions側のblockNewSignupsのexportも外してデプロイし直す。
+const SIGNUPS_ENABLED = false;
+
 export function LoginPage() {
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
@@ -69,16 +74,18 @@ export function LoginPage() {
           {submitting ? '処理中...' : mode === 'signIn' ? 'ログイン' : '登録する'}
         </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setMode((m) => (m === 'signIn' ? 'signUp' : 'signIn'));
-            setError(null);
-          }}
-          className="text-xs text-slate-500 underline underline-offset-2"
-        >
-          {mode === 'signIn' ? 'アカウントをお持ちでない方はこちら' : 'ログインはこちら'}
-        </button>
+        {SIGNUPS_ENABLED && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode((m) => (m === 'signIn' ? 'signUp' : 'signIn'));
+              setError(null);
+            }}
+            className="text-xs text-slate-500 underline underline-offset-2"
+          >
+            {mode === 'signIn' ? 'アカウントをお持ちでない方はこちら' : 'ログインはこちら'}
+          </button>
+        )}
       </form>
     </div>
   );
