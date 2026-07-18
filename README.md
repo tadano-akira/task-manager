@@ -21,7 +21,7 @@ npm run dev
 本番データに触れずに動作確認したい場合:
 
 ```bash
-firebase emulators:start --only firestore,auth
+firebase emulators:start --only firestore,auth,functions
 ```
 
 別ターミナルで `.env.local` に `VITE_USE_FIREBASE_EMULATOR=true` を設定して `npm run dev` を起動すると、`src/lib/firebase.ts` が自動的にFirestore/Authエミュレータへ接続する。
@@ -31,6 +31,7 @@ firebase emulators:start --only firestore,auth
 ```
 src/
   features/
+    admin/          # 最初の管理者作成(claimFirstAdmin callable呼び出し)・ユーザー管理画面(admin限定)
     auth/          # Firebase Authログイン・サインアップ・useAuthUser(認証状態+Firestoreプロフィール購読)
     issues/         # 課題ドメイン: 型定義・ツリー構築/フィルタ/ソート・全文検索・リストビュー/カンバンビューUI・作成/編集モーダル
     masterData/     # 種別(workflowTypes)・ステータス(statuses)マスタ管理画面(admin限定)
@@ -44,6 +45,7 @@ functions/          # Cloud Functions(Firebase Functions標準構成)
   src/
     index.ts            # エクスポート一覧
     onUserCreate.ts      # Authユーザー作成時にusers/{uid}をrole:'member'で自動作成
+    claimFirstAdmin.ts   # 管理者が1人も存在しない場合のみ呼び出しユーザーをadminに昇格するcallable
     tokenizeIssue.ts     # issue書き込み時にkuromoji.jsで検索用トークン化(searchTokens/searchReading)
   scripts/copy-shared.mjs # ビルド前にリポジトリ直下のshared/をfunctions/shared/へ同期(Functionsは自ディレクトリしかデプロイされないため)
 
@@ -67,15 +69,18 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 - カンバンビュー(種別を1つ選択して表示。表示のみ、ドラッグ&ドロップは未実装)
 - プロジェクト管理画面(作成・編集・アーカイブ/復元)
 - 種別・ステータスマスタ管理画面(admin限定。作成・編集・並び替え・既定ステータス設定・アーカイブ/復元)
+- 最初の管理者作成の仕組み(管理者0人の間だけ自己昇格可能な`claimFirstAdmin`)+ ユーザー管理画面(admin限定、ロールの昇格・降格)
 - ロールベースFirestore Security Rules(admin/member、種別・ステータスマスタはadmin限定、子課題のprojectId/workflowTypeId整合性チェック等)
-- Cloud Functions 2本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`)
+- Cloud Functions 3本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`)
 
 未実装(次のステップ候補):
 
-- ガントチャート
 - カンバンビューでのドラッグ&ドロップによるステータス変更
-- 最初の管理者アカウントを作る仕組み(現状Firebase Consoleでの手動編集のみ)
 - 通知機能(期限接近・ステータス変更等、仕様書3章で初期スコープ外と明記)
+
+対応しない方針:
+
+- ガントチャート(不要と判断)
 
 ## Firebaseプロジェクト
 

@@ -9,8 +9,10 @@ import { signOutUser } from './features/auth/authActions';
 import { useIssues, useProjects, useStatuses, useUsers, useWorkflowTypes } from './features/issues/useFirestoreIssueData';
 import { ProjectManagementView } from './features/projects/ProjectManagementView';
 import { MasterDataView } from './features/masterData/MasterDataView';
+import { AdminBootstrapBanner } from './features/admin/AdminBootstrapBanner';
+import { UserManagementView } from './features/admin/UserManagementView';
 
-type View = 'issues' | 'kanban' | 'projects' | 'masterData';
+type View = 'issues' | 'kanban' | 'projects' | 'masterData' | 'userManagement';
 type IssueModalState = { mode: 'create'; parent: Issue | null } | { mode: 'edit'; issue: Issue } | null;
 
 function App() {
@@ -39,6 +41,7 @@ function App() {
   const dataLoading =
     projects.loading || workflowTypes.loading || statuses.loading || users.loading || issues.loading;
   const dataError = projects.error ?? workflowTypes.error ?? statuses.error ?? users.error ?? issues.error;
+  const noAdminYet = !users.loading && !users.data.some((u) => u.role === 'admin');
 
   function openIssue(issueId: string) {
     const issue = issues.data.find((i) => i.id === issueId);
@@ -77,6 +80,14 @@ function App() {
                 種別・ステータス管理
               </button>
             )}
+            {isAdmin && (
+              <button
+                onClick={() => setView('userManagement')}
+                className={`rounded-md px-3 py-1.5 ${view === 'userManagement' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                ユーザー管理
+              </button>
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
@@ -99,6 +110,8 @@ function App() {
         </div>
       </div>
 
+      {noAdminYet && <AdminBootstrapBanner />}
+
       {dataError && (
         <p className="mb-4 text-sm text-red-600">データの取得に失敗しました: {dataError.message}</p>
       )}
@@ -109,6 +122,8 @@ function App() {
         <ProjectManagementView projects={projects.data} />
       ) : view === 'masterData' ? (
         <MasterDataView workflowTypes={workflowTypes.data} statuses={statuses.data} isAdmin={isAdmin} />
+      ) : view === 'userManagement' ? (
+        <UserManagementView users={users.data} currentUserId={authUser.uid} isAdmin={isAdmin} />
       ) : view === 'kanban' ? (
         <KanbanView
           issues={issues.data}
