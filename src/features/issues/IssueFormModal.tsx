@@ -49,7 +49,11 @@ export function IssueFormModal(props: IssueFormModalProps) {
   const [memoFormat, setMemoFormat] = useState<'text' | 'markdown'>(existing?.memoFormat ?? 'text');
   const [statusId, setStatusId] = useState(existing?.statusId ?? defaultStatusId);
   const [priority, setPriority] = useState<Priority>(existing?.priority ?? 'medium');
+  const [startDate, setStartDate] = useState(dateToInputValue(existing?.startDate ?? null));
   const [dueDate, setDueDate] = useState(dateToInputValue(existing?.dueDate ?? null));
+  const [category, setCategory] = useState(existing?.category ?? '');
+  const [subCategory, setSubCategory] = useState(existing?.subCategory ?? '');
+  const [expectedDeliverable, setExpectedDeliverable] = useState(existing?.expectedDeliverable ?? '');
   const [assigneeIds, setAssigneeIds] = useState<string[]>(existing?.assigneeIds ?? []);
   const [links, setLinks] = useState<IssueLink[]>(existing?.links ?? []);
 
@@ -73,6 +77,7 @@ export function IssueFormModal(props: IssueFormModalProps) {
     setSubmitting(true);
     setError(null);
     try {
+      const parsedStartDate = startDate ? new Date(`${startDate}T00:00:00`) : null;
       const parsedDueDate = dueDate ? new Date(`${dueDate}T00:00:00`) : null;
       const cleanedLinks = links.filter((l) => l.label.trim() && l.url.trim());
 
@@ -83,7 +88,11 @@ export function IssueFormModal(props: IssueFormModalProps) {
           memoFormat,
           statusId,
           priority,
+          startDate: parsedStartDate,
           dueDate: parsedDueDate,
+          category,
+          subCategory,
+          expectedDeliverable,
           assigneeIds,
           links: cleanedLinks,
         });
@@ -97,7 +106,11 @@ export function IssueFormModal(props: IssueFormModalProps) {
           parentId: lockedParent?.id ?? null,
           statusId,
           priority,
+          startDate: parsedStartDate,
           dueDate: parsedDueDate,
+          category,
+          subCategory,
+          expectedDeliverable,
           assigneeIds,
           links: cleanedLinks,
         });
@@ -216,12 +229,56 @@ export function IssueFormModal(props: IssueFormModalProps) {
           </label>
         </div>
 
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            開始日
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            期限
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            カテゴリー
+            <input
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            サブカテゴリー
+            <input
+              type="text"
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+        </div>
+
         <label className="flex flex-col gap-1 text-sm text-slate-600">
-          期限
+          想定成果物
           <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            type="text"
+            value={expectedDeliverable}
+            onChange={(e) => setExpectedDeliverable(e.target.value)}
             className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
           />
         </label>

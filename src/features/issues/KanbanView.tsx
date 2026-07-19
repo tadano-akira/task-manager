@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Issue, IssueRowData, ListViewFilters, Priority, Project, Status, User, WorkflowType } from './types';
+import { formatIssueIdentifier } from './IssueRow';
 import { buildIssueRowData } from './sortAndFilter';
 import { useIssueSearch } from './useIssueSearch';
 
@@ -31,10 +32,10 @@ function KanbanCard({ row, parentTitle, onClick }: KanbanCardProps) {
       className={`flex w-full flex-col gap-1.5 rounded-md border border-slate-200 bg-white p-2.5 text-left shadow-sm hover:bg-slate-50 ${DUE_ALERT_CARD_STYLE[row.dueAlertLevel]}`}
     >
       <span
-        className="inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+        className="inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-medium"
         style={{ color: row.project.color, backgroundColor: `${row.project.color}14` }}
       >
-        {row.project.name}
+        {formatIssueIdentifier(row)}
       </span>
       {parentTitle && <span className="text-[10px] text-slate-400">↳ {parentTitle}</span>}
       <span className="text-sm font-medium text-slate-800">{row.title}</span>

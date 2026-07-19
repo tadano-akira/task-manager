@@ -5,8 +5,10 @@
 export interface Project {
   id: string;
   name: string;
+  code: string; // 識別用の短いコード（例: 'AC-dev'）。課題IDの表示に使う（例: AC-dev-001）
   color: string; // プロジェクトバッジの表示色
   archived: boolean;
+  issueCounter?: number; // 直近発行したissue番号。createIssueのトランザクションでのみ更新する内部管理値
 }
 
 export type Priority = 'high' | 'medium' | 'low';
@@ -44,6 +46,7 @@ export interface IssueLink {
 
 export interface Issue {
   id: string;
+  number: number; // プロジェクト内で一意の連番（作成時にトランザクションで自動採番、以後不変）
   projectId: string; // プロジェクト（親課題・小課題）の最上位。子課題は親と同じprojectIdを持つ
   workflowTypeId: string; // 種別（新機能開発/bug対応/調査報告 等）。親課題で選択し、子課題は親から継承する
   title: string;
@@ -53,7 +56,11 @@ export interface Issue {
   statusId: string; // workflowTypeId に対応する statuses のいずれかを参照
   assigneeIds: string[];
   priority: Priority;
+  startDate: Date | null;
   dueDate: Date | null;
+  category: string; // 自由記述の大分類（例: '要件' '設計' 'test'）。workflowType(種別)とは別軸
+  subCategory: string; // 自由記述の中分類（例: 'ヒアリング・キックオフ'）
+  expectedDeliverable: string; // 想定成果物
   links: IssueLink[];
   createdAt: Date;
   updatedAt: Date;

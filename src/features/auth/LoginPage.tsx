@@ -31,7 +31,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-6">
+    <div className="mx-auto flex min-h-screen max-w-sm flex-col p-6 pt-20">
       <h1 className="mb-6 text-center text-2xl font-semibold text-slate-800">タスク管理</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-lg border border-slate-200 p-6">

@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, runTransaction, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { issueConverter } from '../../lib/firestoreConverters';
 import type { IssueLink, Priority } from './types';
@@ -15,16 +15,32 @@ export interface IssueFormInput {
   statusId: string;
   assigneeIds: string[];
   priority: Priority;
+  startDate: Date | null;
   dueDate: Date | null;
+  category: string;
+  subCategory: string;
+  expectedDeliverable: string;
   links: IssueLink[];
 }
 
+// number はプロジェクト内で一意な連番。projects/{projectId}.issueCounter をトランザクションで
+// アトミックにインクリメントして採番する（同時作成時の重複・欠番を防ぐため）。
 export async function createIssue(input: IssueFormInput) {
-  await addDoc(issuesCollection, {
-    id: '',
-    ...input,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const projectRef = doc(db, 'projects', input.projectId);
+  const issueRef = doc(issuesCollection);
+
+  await runTransaction(db, async (tx) => {
+    const projectSnap = await tx.get(projectRef);
+    const nextNumber = ((projectSnap.data()?.issueCounter as number | undefined) ?? 0) + 1;
+
+    tx.update(projectRef, { issueCounter: nextNumber });
+    tx.set(issueRef, {
+      id: '',
+      number: nextNumber,
+      ...input,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
   });
 }
 
@@ -37,7 +53,11 @@ export interface IssueEditableFields {
   statusId: string;
   assigneeIds: string[];
   priority: Priority;
+  startDate: Date | null;
   dueDate: Date | null;
+  category: string;
+  subCategory: string;
+  expectedDeliverable: string;
   links: IssueLink[];
 }
 

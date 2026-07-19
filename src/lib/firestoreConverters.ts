@@ -12,16 +12,20 @@ function toDateOrNow(value: unknown): Date {
 export const projectConverter: FirestoreDataConverter<Project> = {
   toFirestore: (project) => ({
     name: project.name,
+    code: project.code,
     color: project.color,
     archived: project.archived,
+    issueCounter: project.issueCounter ?? 0,
   }),
   fromFirestore: (snap) => {
     const data = snap.data();
     return {
       id: snap.id,
       name: data.name,
+      code: data.code ?? '',
       color: data.color,
       archived: data.archived ?? false,
+      issueCounter: data.issueCounter ?? 0,
     };
   },
 };
@@ -89,6 +93,7 @@ export const userConverter: FirestoreDataConverter<User> = {
 
 export const issueConverter: FirestoreDataConverter<Issue> = {
   toFirestore: (issue) => ({
+    number: issue.number,
     projectId: issue.projectId,
     workflowTypeId: issue.workflowTypeId,
     title: issue.title,
@@ -98,7 +103,11 @@ export const issueConverter: FirestoreDataConverter<Issue> = {
     statusId: issue.statusId,
     assigneeIds: issue.assigneeIds,
     priority: issue.priority,
+    startDate: issue.startDate instanceof Date ? Timestamp.fromDate(issue.startDate) : (issue.startDate ?? null),
     dueDate: issue.dueDate instanceof Date ? Timestamp.fromDate(issue.dueDate) : (issue.dueDate ?? null),
+    category: issue.category,
+    subCategory: issue.subCategory,
+    expectedDeliverable: issue.expectedDeliverable,
     links: issue.links,
     createdAt: issue.createdAt instanceof Date ? Timestamp.fromDate(issue.createdAt) : issue.createdAt,
     updatedAt: issue.updatedAt instanceof Date ? Timestamp.fromDate(issue.updatedAt) : issue.updatedAt,
@@ -107,6 +116,7 @@ export const issueConverter: FirestoreDataConverter<Issue> = {
     const data = snap.data();
     return {
       id: snap.id,
+      number: data.number ?? 0,
       projectId: data.projectId,
       workflowTypeId: data.workflowTypeId,
       title: data.title,
@@ -116,7 +126,11 @@ export const issueConverter: FirestoreDataConverter<Issue> = {
       statusId: data.statusId,
       assigneeIds: (data.assigneeIds as string[]) ?? [],
       priority: (data.priority as Priority) ?? 'medium',
+      startDate: toDateOrNull(data.startDate),
       dueDate: toDateOrNull(data.dueDate),
+      category: data.category ?? '',
+      subCategory: data.subCategory ?? '',
+      expectedDeliverable: data.expectedDeliverable ?? '',
       links: (data.links as IssueLink[]) ?? [],
       createdAt: toDateOrNow(data.createdAt),
       updatedAt: toDateOrNow(data.updatedAt),

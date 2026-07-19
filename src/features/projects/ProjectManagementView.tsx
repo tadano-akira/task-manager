@@ -7,10 +7,11 @@ const PRESET_COLORS = ['#0ea5e9', '#a855f7', '#ef4444', '#f59e0b', '#22c55e', '#
 interface ProjectFormState {
   id: string | null; // null = 新規作成
   name: string;
+  code: string;
   color: string;
 }
 
-const EMPTY_FORM: ProjectFormState = { id: null, name: '', color: PRESET_COLORS[0] };
+const EMPTY_FORM: ProjectFormState = { id: null, name: '', code: '', color: PRESET_COLORS[0] };
 
 interface ProjectManagementViewProps {
   projects: Project[];
@@ -26,14 +27,14 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || !form.code.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
       if (form.id) {
-        await updateProject(form.id, { name: form.name.trim(), color: form.color });
+        await updateProject(form.id, { name: form.name.trim(), code: form.code.trim(), color: form.color });
       } else {
-        await createProject({ name: form.name.trim(), color: form.color });
+        await createProject({ name: form.name.trim(), code: form.code.trim(), color: form.color });
       }
       setForm(EMPTY_FORM);
     } catch {
@@ -44,7 +45,7 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
   }
 
   function startEdit(project: Project) {
-    setForm({ id: project.id, name: project.name, color: project.color });
+    setForm({ id: project.id, name: project.name, code: project.code, color: project.color });
     setError(null);
   }
 
@@ -64,16 +65,30 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
           {form.id ? 'プロジェクトを編集' : '新しいプロジェクトを作成'}
         </h2>
 
-        <label className="flex flex-col gap-1 text-sm text-slate-600">
-          プロジェクト名
-          <input
-            type="text"
-            required
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            プロジェクト名
+            <input
+              type="text"
+              required
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm text-slate-600">
+            プロジェクトコード
+            <input
+              type="text"
+              required
+              placeholder="例: AC-dev"
+              value={form.code}
+              onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+            />
+          </label>
+        </div>
 
         <div className="flex flex-col gap-1 text-sm text-slate-600">
           バッジ色
@@ -130,6 +145,7 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <th className="py-2 px-3 font-medium">コード</th>
               <th className="py-2 px-3 font-medium">プロジェクト</th>
               <th className="py-2 px-3 font-medium">状態</th>
               <th className="py-2 px-3 font-medium"></th>
@@ -138,13 +154,14 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
           <tbody>
             {visibleProjects.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-8 text-center text-sm text-slate-400">
+                <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
                   プロジェクトがありません
                 </td>
               </tr>
             ) : (
               visibleProjects.map((project) => (
                 <tr key={project.id} className="border-b border-slate-100">
+                  <td className="py-2 px-3 font-mono text-xs text-slate-500">{project.code}</td>
                   <td className="py-2 px-3">
                     <span
                       className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"

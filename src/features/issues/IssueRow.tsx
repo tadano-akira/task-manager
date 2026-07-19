@@ -17,6 +17,10 @@ function formatDate(date: Date | null): string {
   return new Intl.DateTimeFormat('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 
+export function formatIssueIdentifier(row: { project: { code: string }; number: number }): string {
+  return `${row.project.code}-${String(row.number).padStart(3, '0')}`;
+}
+
 interface IssueRowProps {
   row: IssueRowData;
   onClick?: (issueId: string) => void;
@@ -31,14 +35,14 @@ export function IssueRow({ row, onClick }: IssueRowProps) {
       className={`border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors ${rowAlertClassName}`}
       onClick={() => onClick?.(row.id)}
     >
-      {/* プロジェクト／種別 */}
+      {/* 識別ID／種別 */}
       <td className="py-2 px-3">
         <div className="flex flex-col gap-1">
           <span
-            className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium"
+            className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-mono font-medium"
             style={{ color: row.project.color, backgroundColor: `${row.project.color}14` }}
           >
-            {row.project.name}
+            {formatIssueIdentifier(row)}
           </span>
           <span className="text-[10px] text-slate-400">{row.workflowType.name}</span>
         </div>
