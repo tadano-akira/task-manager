@@ -1,10 +1,46 @@
 # task-manager
 
-Firebase + TypeScript で構築するタスク（課題）管理ツール。詳細な仕様は [docs/task-management-tool-spec.md](docs/task-management-tool-spec.md) を参照。
+Firebase + TypeScript で構築するタスク（課題）管理ツール。**プロジェクト（親課題／小課題）の3階層構造**を軸に、種別ごとに異なるステータスフローを持たせて進捗管理・担当者管理を行う。詳細な仕様は [docs/task-management-tool-spec.md](docs/task-management-tool-spec.md) を参照。
 
-- **フロントエンド**: React + Vite + TypeScript + Tailwind CSS v4
-- **バックエンド**: Firebase（Firestore / Authentication / Cloud Functions）
-- **検索**: クライアントサイド全文検索（Fuse.js）+ Cloud Functions側でのkuromoji.js事前トークン化
+本番環境: https://task-mgr-tool.web.app
+
+## 技術構成
+
+| 分類 | 技術 |
+|---|---|
+| フロントエンド | React 19 + TypeScript + Vite + Tailwind CSS v4 |
+| バックエンド | Firebase（Firestore / Authentication / Cloud Functions v2 / Cloud Messaging / Hosting） |
+| データベース | Cloud Firestore（asia-northeast1、`onSnapshot`によるリアルタイム同期） |
+| 認証 | Firebase Authentication（メール/パスワード）+ Google Cloud Identity Platform（Authブロッキング関数用にアップグレード済み） |
+| 権限制御 | Firestore Security Rules によるロールベース制御（admin / member） |
+| 検索 | クライアントサイド全文検索（Fuse.js）+ Cloud Functions側でのkuromoji.js事前トークン化（分かち書き・読み仮名正規化） |
+| 通知 | ブラウザPUSH通知（Firebase Cloud Messaging、Service Worker経由） |
+| ホスティング | Firebase Hosting |
+
+## 機能一覧
+
+**認証・権限**
+- メール/パスワードでのログイン・ログアウト（新規登録は現在停止中）
+- 最初の管理者作成の仕組み（管理者が0人の間だけ自己昇格できるcallable関数）
+- ユーザー管理画面（admin限定、ロールの昇格・降格）
+- ロールベースFirestore Security Rules（admin / member）
+
+**課題管理**
+- プロジェクト（親課題／小課題）の3階層構造、子課題は親のproject/種別を継承
+- 課題の作成・編集・削除（タイトル・詳細・開始日/期限・担当者・優先度・カテゴリー/サブカテゴリー・想定成果物・外部リンク）
+- プロジェクト内で一意な課題番号の自動採番（`projects.code` + `issues.number` による識別ID、例: `AC-dev-001`）
+- 種別ごとに異なるステータスフロー（種別・ステータスマスタはadmin限定で管理）
+
+**ビュー**
+- 課題リストビュー（ツリー表示・フィルタ・全文検索・期限アラート・ページネーション）
+- カンバンビュー（種別を1つ選択して表示。ドラッグ&ドロップは未実装）
+
+**管理機能**
+- プロジェクト管理画面（作成・編集・アーカイブ/復元、プロジェクトコードの登録）
+- 種別・ステータスマスタ管理画面（作成・編集・並び替え・既定ステータス設定・アーカイブ/復元、admin限定）
+
+**通知**
+- ブラウザPUSH通知（FCM）。担当者アサイン時・ステータス変更時・期限接近（日次バッチ）の3トリガー
 
 ## セットアップ
 
@@ -70,19 +106,9 @@ firestore.rules / firestore.indexes.json / firebase.json  # Firestore・Function
 
 ## 実装状況(2026-07-19時点)
 
-実装済み:
+機能の詳細は上記「機能一覧」を参照。以下は補足・現在の運用状態。
 
-- Firebase Authによるメール/パスワード ログイン・サインアップ・ログアウト
 - Firestoreからのリアルタイムデータ取得層(`onSnapshot`ベース、`issues`/`projects`/`workflowTypes`/`statuses`/`users`)
-- 課題リストビュー(ツリー表示・フィルタ・全文検索・期限アラート・ページネーション)。プロジェクト/種別列は`projects.code`+`issues.number`による識別ID(例: `AC-dev-001`)で表示(プロジェクトは一意なため名前は表示しない)
-- 課題の作成・編集モーダル(子課題は親のproject/種別を継承・固定、削除も可。開始日/カテゴリー/サブカテゴリー/想定成果物を含む)
-- カンバンビュー(種別を1つ選択して表示。表示のみ、ドラッグ&ドロップは未実装。カードもリストビューと同じ識別ID表示)
-- プロジェクト管理画面(作成・編集・アーカイブ/復元。プロジェクトコードの登録・編集を含む)
-- 課題番号の自動採番(`projects.issueCounter`をFirestoreトランザクションでアトミックにインクリメントし、プロジェクト内で一意な`issues.number`を発行)
-- 種別・ステータスマスタ管理画面(admin限定。作成・編集・並び替え・既定ステータス設定・アーカイブ/復元)
-- 最初の管理者作成の仕組み(管理者0人の間だけ自己昇格可能な`claimFirstAdmin`)+ ユーザー管理画面(admin限定、ロールの昇格・降格)
-- ロールベースFirestore Security Rules(admin/member、種別・ステータスマスタはadmin限定、子課題のprojectId/workflowTypeId整合性チェック等)
-- ブラウザPUSH通知(FCM)。担当者アサイン時・ステータス変更時・期限接近(日次バッチ)の3トリガー。メール通知は対応しない
 - **新規登録を一時停止中**(`blockNewSignups`、Authブロッキング関数)。検証用アカウント作成後に閉じた。フロントエンドの「新規登録」導線も非表示(`LoginPage.tsx`の`SIGNUPS_ENABLED = false`)。再開手順は仕様書2.5参照
 - Cloud Functions 6本を本番デプロイ済み(`tokenizeIssue`・`onUserCreate`・`claimFirstAdmin`・`onIssueWrittenNotify`・`notifyDueDateApproaching`・`blockNewSignups`)
 
