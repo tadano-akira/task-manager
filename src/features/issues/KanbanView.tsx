@@ -147,7 +147,7 @@ export function KanbanView({ issues, projects, workflowTypes, statuses, users, c
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="タイトル・メモを検索"
-          className="w-56 rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+          className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500 sm:w-56"
         />
         {currentUserId && (
           <label className="flex items-center gap-1.5 text-sm text-slate-600">
@@ -195,7 +195,7 @@ export function KanbanView({ issues, projects, workflowTypes, statuses, users, c
       </div>
 
       {/* カンバンボード（表示のみ。ドラッグ&ドロップでのステータス変更は後続追加、仕様書2.3） */}
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="-mx-3 flex gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:px-0">
         {columns.length === 0 ? (
           <p className="p-6 text-sm text-slate-400">この種別にはステータスが登録されていません。</p>
         ) : (

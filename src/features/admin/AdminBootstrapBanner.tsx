@@ -29,7 +29,7 @@ export function AdminBootstrapBanner({ onClaimed }: AdminBootstrapBannerProps) {
   if (done) return null;
 
   return (
-    <div className="mb-4 flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
       <span>このプロジェクトにはまだ管理者がいません。最初の管理者になりますか？</span>
       <div className="flex items-center gap-2">
         {error && <span className="text-xs text-red-600">{error}</span>}

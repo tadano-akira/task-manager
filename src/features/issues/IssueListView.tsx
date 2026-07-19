@@ -141,7 +141,7 @@ export function IssueListView({
           value={filters.searchQuery}
           onChange={(e) => updateFilters({ searchQuery: e.target.value })}
           placeholder="タイトル・メモを検索"
-          className="w-64 rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500"
+          className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-slate-500 sm:w-64"
         />
 
         {currentUserId && (
@@ -237,30 +237,32 @@ export function IssueListView({
         })}
       </div>
 
-      {/* テーブル本体 */}
-      <table className="w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b border-slate-200 text-xs text-slate-500">
-            <th className="py-2 px-3 font-medium">プロジェクト/種別</th>
-            <th className="py-2 px-3 font-medium">タイトル</th>
-            <th className="py-2 px-3 font-medium">ステータス</th>
-            <th className="py-2 px-3 font-medium">優先度</th>
-            <th className="py-2 px-3 font-medium">担当者</th>
-            <th className="py-2 px-3 font-medium">期限</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pageRows.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="py-8 text-center text-sm text-slate-400">
-                該当する課題がありません
-              </td>
+      {/* テーブル本体（狭い画面では横スクロール） */}
+      <div className="-mx-3 overflow-x-auto sm:mx-0">
+        <table className="w-full min-w-[720px] border-collapse text-left sm:min-w-0">
+          <thead>
+            <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <th className="py-2 px-3 font-medium">識別ID/種別</th>
+              <th className="py-2 px-3 font-medium">タイトル</th>
+              <th className="py-2 px-3 font-medium">ステータス</th>
+              <th className="py-2 px-3 font-medium">優先度</th>
+              <th className="py-2 px-3 font-medium">担当者</th>
+              <th className="py-2 px-3 font-medium">期限</th>
             </tr>
-          ) : (
-            pageRows.map((row) => <IssueRow key={row.id} row={row} onClick={onIssueClick} />)
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {pageRows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-sm text-slate-400">
+                  該当する課題がありません
+                </td>
+              </tr>
+            ) : (
+              pageRows.map((row) => <IssueRow key={row.id} row={row} onClick={onIssueClick} />)
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* ページネーション */}
       {totalPages > 1 && (

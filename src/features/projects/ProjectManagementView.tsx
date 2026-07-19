@@ -65,7 +65,7 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
           {form.id ? 'プロジェクトを編集' : '新しいプロジェクトを作成'}
         </h2>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-600">
             プロジェクト名
             <input
@@ -142,58 +142,60 @@ export function ProjectManagementView({ projects }: ProjectManagementViewProps) 
           アーカイブ済みも表示
         </label>
 
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-slate-200 text-xs text-slate-500">
-              <th className="py-2 px-3 font-medium">コード</th>
-              <th className="py-2 px-3 font-medium">プロジェクト</th>
-              <th className="py-2 px-3 font-medium">状態</th>
-              <th className="py-2 px-3 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleProjects.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
-                  プロジェクトがありません
-                </td>
+        <div className="-mx-3 overflow-x-auto sm:mx-0">
+          <table className="w-full min-w-[520px] border-collapse text-left sm:min-w-0">
+            <thead>
+              <tr className="border-b border-slate-200 text-xs text-slate-500">
+                <th className="py-2 px-3 font-medium">コード</th>
+                <th className="py-2 px-3 font-medium">プロジェクト</th>
+                <th className="py-2 px-3 font-medium">状態</th>
+                <th className="py-2 px-3 font-medium"></th>
               </tr>
-            ) : (
-              visibleProjects.map((project) => (
-                <tr key={project.id} className="border-b border-slate-100">
-                  <td className="py-2 px-3 font-mono text-xs text-slate-500">{project.code}</td>
-                  <td className="py-2 px-3">
-                    <span
-                      className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-                      style={{ color: project.color, backgroundColor: `${project.color}14` }}
-                    >
-                      {project.name}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 text-xs text-slate-500">
-                    {project.archived ? 'アーカイブ済み' : '稼働中'}
-                  </td>
-                  <td className="py-2 px-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => startEdit(project)}
-                        className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                      >
-                        編集
-                      </button>
-                      <button
-                        onClick={() => toggleArchived(project)}
-                        className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                      >
-                        {project.archived ? '復元' : 'アーカイブ'}
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {visibleProjects.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                    プロジェクトがありません
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                visibleProjects.map((project) => (
+                  <tr key={project.id} className="border-b border-slate-100">
+                    <td className="py-2 px-3 font-mono text-xs text-slate-500">{project.code}</td>
+                    <td className="py-2 px-3">
+                      <span
+                        className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
+                        style={{ color: project.color, backgroundColor: `${project.color}14` }}
+                      >
+                        {project.name}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 text-xs text-slate-500">
+                      {project.archived ? 'アーカイブ済み' : '稼働中'}
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => startEdit(project)}
+                          className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                        >
+                          編集
+                        </button>
+                        <button
+                          onClick={() => toggleArchived(project)}
+                          className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                        >
+                          {project.archived ? '復元' : 'アーカイブ'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

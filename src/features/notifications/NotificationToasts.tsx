@@ -9,9 +9,9 @@ export function NotificationToasts({ toasts, onDismiss }: NotificationToastsProp
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed right-4 top-4 z-50 flex flex-col gap-2">
+    <div className="fixed inset-x-4 top-4 z-50 flex flex-col gap-2 sm:inset-x-auto sm:right-4">
       {toasts.map((t) => (
-        <div key={t.id} className="w-72 rounded-md border border-slate-200 bg-white p-3 shadow-lg">
+        <div key={t.id} className="w-full rounded-md border border-slate-200 bg-white p-3 shadow-lg sm:w-72">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-medium text-slate-800">{t.title}</p>

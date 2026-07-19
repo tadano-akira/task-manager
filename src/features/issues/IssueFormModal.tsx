@@ -138,11 +138,11 @@ export function IssueFormModal(props: IssueFormModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4" onClick={onClose}>
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-3 overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
+        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-3 overflow-y-auto rounded-lg bg-white p-4 shadow-lg sm:p-6"
       >
         <h2 className="text-sm font-medium text-slate-700">
           {isEdit ? '課題を編集' : lockedParent ? `「${lockedParent.title}」の子課題を作成` : '新しい課題を作成'}
@@ -159,7 +159,7 @@ export function IssueFormModal(props: IssueFormModalProps) {
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-600">
             プロジェクト
             <select
@@ -198,7 +198,7 @@ export function IssueFormModal(props: IssueFormModalProps) {
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-600">
             ステータス
             <select
@@ -229,7 +229,7 @@ export function IssueFormModal(props: IssueFormModalProps) {
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-600">
             開始日
             <input
@@ -251,7 +251,7 @@ export function IssueFormModal(props: IssueFormModalProps) {
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm text-slate-600">
             カテゴリー
             <input

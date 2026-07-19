@@ -195,52 +195,54 @@ export function MasterDataView({ workflowTypes, statuses, isAdmin }: MasterDataV
       </form>
 
       {/* 種別一覧(並び替え・編集) */}
-      <table className="w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b border-slate-200 text-xs text-slate-500">
-            <th className="py-2 px-3 font-medium">種別</th>
-            <th className="py-2 px-3 font-medium"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {orderedWorkflowTypes.map((w, index) => (
-            <tr key={w.id} className="border-b border-slate-100">
-              <td className="py-2 px-3">
-                <span
-                  className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-                  style={{ color: w.color, backgroundColor: `${w.color}14` }}
-                >
-                  {w.name}
-                </span>
-              </td>
-              <td className="py-2 px-3 text-right">
-                <div className="flex justify-end gap-1.5">
-                  <button
-                    disabled={index === 0}
-                    onClick={() => moveWorkflowType(orderedWorkflowTypes, index, 'up')}
-                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    disabled={index === orderedWorkflowTypes.length - 1}
-                    onClick={() => moveWorkflowType(orderedWorkflowTypes, index, 'down')}
-                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={() => setWorkflowTypeForm({ id: w.id, name: w.name, color: w.color })}
-                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                  >
-                    編集
-                  </button>
-                </div>
-              </td>
+      <div className="-mx-3 overflow-x-auto sm:mx-0">
+        <table className="w-full min-w-[420px] border-collapse text-left sm:min-w-0">
+          <thead>
+            <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <th className="py-2 px-3 font-medium">種別</th>
+              <th className="py-2 px-3 font-medium"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {orderedWorkflowTypes.map((w, index) => (
+              <tr key={w.id} className="border-b border-slate-100">
+                <td className="py-2 px-3">
+                  <span
+                    className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
+                    style={{ color: w.color, backgroundColor: `${w.color}14` }}
+                  >
+                    {w.name}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-right">
+                  <div className="flex justify-end gap-1.5">
+                    <button
+                      disabled={index === 0}
+                      onClick={() => moveWorkflowType(orderedWorkflowTypes, index, 'up')}
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      disabled={index === orderedWorkflowTypes.length - 1}
+                      onClick={() => moveWorkflowType(orderedWorkflowTypes, index, 'down')}
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      onClick={() => setWorkflowTypeForm({ id: w.id, name: w.name, color: w.color })}
+                      className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                    >
+                      編集
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* ステータス管理(選択中の種別のみ) */}
       {selectedWorkflowType && (
@@ -307,80 +309,82 @@ export function MasterDataView({ workflowTypes, statuses, isAdmin }: MasterDataV
             アーカイブ済みも表示
           </label>
 
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
-                <th className="py-2 px-3 font-medium">ステータス</th>
-                <th className="py-2 px-3 font-medium">既定</th>
-                <th className="py-2 px-3 font-medium">状態</th>
-                <th className="py-2 px-3 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {siblingStatuses.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
-                    ステータスがありません
-                  </td>
+          <div className="-mx-3 overflow-x-auto sm:mx-0">
+            <table className="w-full min-w-[560px] border-collapse text-left sm:min-w-0">
+              <thead>
+                <tr className="border-b border-slate-200 text-xs text-slate-500">
+                  <th className="py-2 px-3 font-medium">ステータス</th>
+                  <th className="py-2 px-3 font-medium">既定</th>
+                  <th className="py-2 px-3 font-medium">状態</th>
+                  <th className="py-2 px-3 font-medium"></th>
                 </tr>
-              ) : (
-                siblingStatuses.map((s, index) => (
-                  <tr key={s.id} className="border-b border-slate-100">
-                    <td className="py-2 px-3">
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium"
-                        style={{ borderColor: s.color, color: s.color, backgroundColor: `${s.color}14` }}
-                      >
-                        {s.label}
-                        <span className="text-[10px] opacity-70">{s.progressPercent}%</span>
-                      </span>
-                    </td>
-                    <td className="py-2 px-3">
-                      <input
-                        type="radio"
-                        name="defaultStatus"
-                        checked={s.isDefault}
-                        onChange={() => setDefaultStatus(selectedId!, s.id, statuses)}
-                      />
-                    </td>
-                    <td className="py-2 px-3 text-xs text-slate-500">
-                      {s.archived ? 'アーカイブ済み' : '稼働中'}
-                    </td>
-                    <td className="py-2 px-3 text-right">
-                      <div className="flex justify-end gap-1.5">
-                        <button
-                          disabled={index === 0}
-                          onClick={() => moveStatus(siblingStatuses, index, 'up')}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          disabled={index === siblingStatuses.length - 1}
-                          onClick={() => moveStatus(siblingStatuses, index, 'down')}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          onClick={() => setStatusForm({ id: s.id, label: s.label, color: s.color, progressPercent: s.progressPercent })}
-                          className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                        >
-                          編集
-                        </button>
-                        <button
-                          onClick={() => setStatusArchived(s.id, !s.archived)}
-                          className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                        >
-                          {s.archived ? '復元' : 'アーカイブ'}
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {siblingStatuses.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                      ステータスがありません
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  siblingStatuses.map((s, index) => (
+                    <tr key={s.id} className="border-b border-slate-100">
+                      <td className="py-2 px-3">
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium"
+                          style={{ borderColor: s.color, color: s.color, backgroundColor: `${s.color}14` }}
+                        >
+                          {s.label}
+                          <span className="text-[10px] opacity-70">{s.progressPercent}%</span>
+                        </span>
+                      </td>
+                      <td className="py-2 px-3">
+                        <input
+                          type="radio"
+                          name="defaultStatus"
+                          checked={s.isDefault}
+                          onChange={() => setDefaultStatus(selectedId!, s.id, statuses)}
+                        />
+                      </td>
+                      <td className="py-2 px-3 text-xs text-slate-500">
+                        {s.archived ? 'アーカイブ済み' : '稼働中'}
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            disabled={index === 0}
+                            onClick={() => moveStatus(siblingStatuses, index, 'up')}
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            disabled={index === siblingStatuses.length - 1}
+                            onClick={() => moveStatus(siblingStatuses, index, 'down')}
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                          >
+                            ↓
+                          </button>
+                          <button
+                            onClick={() => setStatusForm({ id: s.id, label: s.label, color: s.color, progressPercent: s.progressPercent })}
+                            className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                          >
+                            編集
+                          </button>
+                          <button
+                            onClick={() => setStatusArchived(s.id, !s.archived)}
+                            className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                          >
+                            {s.archived ? '復元' : 'アーカイブ'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
